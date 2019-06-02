@@ -1,191 +1,128 @@
+//
+//  lab1.cpp
+//  lab1
+//
+//  Created by whoeny on 5/31/19.
+//  Copyright © 2019 whoeny. All rights reserved.
+//
+
 #include <iostream>
+#include <cassert>
+#include "lab1.h"
+
+using namespace std;
+
+bool is_alternating(int num, int base) {
+    // TODO: Your implementation here
+    if (num >= 1 && num <= 10000000 && base >= 2 && base <= 10) return true;
+    return false;
+}
+
+void test_alternating() {
+    int num, base;
+    cout << "Input the num and base: " << endl;
+    cin >> num >> base;
+    
+    assert(is_alternating(num, base));  //
+    // TODO: Add more test cases
+    
+    int i = 1, transfer = 0;
+    
+    while(num > 0) {
+        transfer = transfer + i * (num % base);    // transfer is the num in base
+        num /= base;
+        i *= 10;
+    }
+    
+    //cout << transfer << endl;
+    int flag = 0;
+    if (transfer / 10 != 0) {    //改成 transfer >= base 更好
+        //改成简洁的思路：((num % base) + (num / base % base)) % 2 或者 if(new_number[i] % 2 == new_number[i+1] % 2)更好
+        int odd = transfer % 2;
+        int even = (transfer / 10) % 2;
+        if (odd == even) flag = 1;
+        else {
+            int num_odd = transfer / 100, num_even = transfer / 1000;
+            //cout << num_odd << endl << num_even << endl;
+            
+            while (num_odd > 0) {
+                //cout << num_odd % 2 << endl;
+                if (odd != num_odd % 2) {flag +=1; break;}
+                //cout << flag << endl;
+                num_odd /= 100;
+                //cout << num_odd << endl;
+            }
+            
+            //cout << "flag " << flag << endl;
+            
+            while (num_even > 0) {
+                //cout << num_even % 2 << endl;
+                if (even != num_even % 2) {flag +=1; break;}
+                //cout << flag << endl;
+                num_even /= 100;
+                //cout << num_even << endl;
+            }
+            //cout << "flag " << flag << endl;
+
+        }
+    }
+    //cout << flag << endl;
+    
+    if (flag == 0) cout << "Alternating number tests passed!" << endl;
+    else cout << "Alternating number tests failed!" << endl;
+}
+/*
+#include <iostream>
+#include <cmath>
+#include <cstring>
 #include <cassert>
 
 using namespace std;
 
-namespace TZTsai {
-    bool is_alternating_helper(int num, int base, int is_odd) {
-        if (num == 0)
-            return true;
-        if (num % 2 == is_odd)
-            return false;
-        return is_alternating_helper(num / base, base, !is_odd);
+bool is_odd(int num) {
+    for (int i = -9; i <= 9; i += 2) {
+        if (num == i) {return true;}
     }
-
-    bool is_alternating(int num, int base) {
-        return is_alternating_helper(num / base, base, num % 2);
-    }
+    return false;
 }
 
-namespace MxMoss3 {
-    bool is_alternating(int num, int base) {
+bool is_alternating(int num, int base) {
+    // TODO: Your implementation here
+    int digit = ceil(log10(num));
+    if (digit == 1) {
+        return true;
+    } else {
+        digit = 4;
+        cout << digit << endl;
+        int number[digit];
+        cout << sizeof(number) << endl;
+        
+        memset(number, 0, sizeof(number));
+        
+        cout << sizeof(number) << endl;
 
-        // convert to base b
-        int new_number[10];
-        int new_index = 0;
-        while (num != 0) {
-            int digit = num % base;
-            new_number[new_index] = digit;
-            new_index++;
-
-            num /= base;
+        for (int i = 0; i < digit; i++) {
+            while (ceil(log10(num)) == digit - i | log10(num) == digit - i - 1) {
+                number[i]++;
+                num = num - pow(10, digit - i -1);
+            }
         }
-
-        //check for alternating even and odd
-        for (int i = 0; i <= new_index - 2; ++i) {
-            if (new_number[i] % 2 == new_number[i + 1] % 2) {
+        for (int i = 0; i < digit - 1; i++) {
+            if (is_odd(number[i] - number[i + 1]) == false) {
                 return false;
             }
         }
-
-        return true;
     }
-}
-
-namespace chenty0704 {
-    bool is_alternating(int num, int base) {
-        int digit, last_digit;
-        last_digit = num % base;
-        num /= base;
-        while (num > 0) {
-            digit = num % base;
-            if ((digit + last_digit) % 2 == 0)
-                return false;
-            last_digit = digit;
-            num /= base;
-        }
-        return true;
-    }
-}
-
-namespace zhaomuhan {
-    bool same_sign(int num1, int num2) {
-        return (num1 % 2 == num2 % 2);
-    }
-
-    bool is_alternating(int num, int base) {
-        int flag = 1;
-        int b = base;
-        while (num > 0) {
-            int temp1, temp2;
-            temp1 = num % b;
-            num = num / b;
-            if (num == 0) { break; }
-            temp2 = num % b;
-            if (same_sign(temp1, temp2)) { flag = 0; }
-        }
-        return (flag == 1);
-    }
+    return true;
 }
 
 void test_alternating() {
-    assert(!TZTsai::is_alternating(7, 2));
-    assert(MxMoss3::is_alternating(21, 2));
-    assert(chenty0704::is_alternating(1521, 8));
-    assert(zhaomuhan::is_alternating(2529, 8));
-    assert(!TZTsai::is_alternating(4529, 8));
-    assert(MxMoss3::is_alternating(1725654, 16));
-    assert(!chenty0704::is_alternating(1529046, 16));
-    assert(zhaomuhan::is_alternating(1197057, 15));
-    assert(TZTsai::is_alternating(1, 10));
-    assert(MxMoss3::is_alternating(16, 10));
-    assert(chenty0704::is_alternating(21, 10));
-    assert(!zhaomuhan::is_alternating(22, 10));
-    assert(TZTsai::is_alternating(23, 10));
-    assert(!MxMoss3::is_alternating(24, 10));
-    assert(chenty0704::is_alternating(56, 10));
-    assert(zhaomuhan::is_alternating(72, 10));
-    assert(TZTsai::is_alternating(74, 10));
-    assert(MxMoss3::is_alternating(96, 10));
-    assert(chenty0704::is_alternating(101, 10));
-    assert(zhaomuhan::is_alternating(103, 10));
-    assert(!TZTsai::is_alternating(177, 10));
-    assert(MxMoss3::is_alternating(212, 10));
-    assert(!chenty0704::is_alternating(217, 10));
-    assert(zhaomuhan::is_alternating(294, 10));
-    assert(TZTsai::is_alternating(303, 10));
-    assert(MxMoss3::is_alternating(307, 10));
-    assert(chenty0704::is_alternating(325, 10));
-    assert(!zhaomuhan::is_alternating(374, 10));
-    assert(!TZTsai::is_alternating(403, 10));
-    assert(MxMoss3::is_alternating(458, 10));
-    assert(chenty0704::is_alternating(523, 10));
-    assert(zhaomuhan::is_alternating(563, 10));
-    assert(!TZTsai::is_alternating(611, 10));
-    assert(MxMoss3::is_alternating(612, 10));
-    assert(chenty0704::is_alternating(638, 10));
-    assert(!zhaomuhan::is_alternating(664, 10));
-    assert(TZTsai::is_alternating(672, 10));
-    assert(!MxMoss3::is_alternating(688, 10));
-    assert(chenty0704::is_alternating(703, 10));
-    assert(!zhaomuhan::is_alternating(728, 10));
-    assert(TZTsai::is_alternating(729, 10));
-    assert(!MxMoss3::is_alternating(737, 10));
-    assert(chenty0704::is_alternating(787, 10));
-    assert(zhaomuhan::is_alternating(838, 10));
-    assert(TZTsai::is_alternating(874, 10));
-    assert(MxMoss3::is_alternating(890, 10));
-    assert(chenty0704::is_alternating(907, 10));
-    assert(zhaomuhan::is_alternating(967, 10));
-    assert(TZTsai::is_alternating(987, 10));
-    assert(MxMoss3::is_alternating(1016, 10));
-    assert(chenty0704::is_alternating(1052, 10));
-    assert(zhaomuhan::is_alternating(1094, 10));
-    assert(!TZTsai::is_alternating(1246, 10));
-    assert(MxMoss3::is_alternating(1412, 10));
-    assert(chenty0704::is_alternating(1414, 10));
-    assert(zhaomuhan::is_alternating(1418, 10));
-    assert(TZTsai::is_alternating(1456, 10));
-    assert(MxMoss3::is_alternating(1470, 10));
-    assert(chenty0704::is_alternating(1498, 10));
-    assert(zhaomuhan::is_alternating(1618, 10));
-    assert(TZTsai::is_alternating(1650, 10));
-    assert(MxMoss3::is_alternating(1670, 10));
-    assert(chenty0704::is_alternating(1694, 10));
-    assert(zhaomuhan::is_alternating(1698, 10));
-    assert(!TZTsai::is_alternating(1798, 10));
-    assert(MxMoss3::is_alternating(1836, 10));
-    assert(!chenty0704::is_alternating(1849, 10));
-    assert(zhaomuhan::is_alternating(1872, 10));
-    assert(TZTsai::is_alternating(1896, 10));
-    assert(!MxMoss3::is_alternating(1920, 10));
-    assert(!chenty0704::is_alternating(1937, 10));
-    assert(!zhaomuhan::is_alternating(2033, 10));
-    assert(!TZTsai::is_alternating(2098, 10));
-    assert(MxMoss3::is_alternating(2101, 10));
-    assert(chenty0704::is_alternating(2163, 10));
-    assert(zhaomuhan::is_alternating(2189, 10));
-    assert(!TZTsai::is_alternating(2190, 10));
-    assert(!MxMoss3::is_alternating(2201, 10));
-    assert(chenty0704::is_alternating(2301, 10));
-    assert(!zhaomuhan::is_alternating(2316, 10));
-    assert(TZTsai::is_alternating(2323, 10));
-    assert(MxMoss3::is_alternating(2361, 10));
-    assert(!chenty0704::is_alternating(2448, 10));
-    assert(!zhaomuhan::is_alternating(2454, 10));
-    assert(!TZTsai::is_alternating(2476, 10));
-    assert(MxMoss3::is_alternating(2523, 10));
-    assert(chenty0704::is_alternating(2563, 10));
-    assert(zhaomuhan::is_alternating(2569, 10));
-    assert(!TZTsai::is_alternating(2570, 10));
-    assert(MxMoss3::is_alternating(2585, 10));
-    assert(!chenty0704::is_alternating(2586, 10));
-    assert(!zhaomuhan::is_alternating(2646, 10));
-    assert(TZTsai::is_alternating(2721, 10));
-    assert(MxMoss3::is_alternating(2747, 10));
-    assert(chenty0704::is_alternating(2767, 10));
-    assert(zhaomuhan::is_alternating(2905, 10));
-    assert(!TZTsai::is_alternating(2926, 10));
-    assert(!MxMoss3::is_alternating(2972, 10));
-    assert(chenty0704::is_alternating(3018, 10));
-    assert(zhaomuhan::is_alternating(3030, 10));
-    assert(TZTsai::is_alternating(3052, 10));
-    assert(MxMoss3::is_alternating(3096, 10));
-    assert(!chenty0704::is_alternating(3099, 10));
-    assert(!zhaomuhan::is_alternating(3241, 10));
-    assert(!TZTsai::is_alternating(3305, 10));
-    assert(!MxMoss3::is_alternating(3323, 10));
-    assert(chenty0704::is_alternating(3416, 10));
-    assert(!zhaomuhan::is_alternating(3447, 10));
+    assert(!is_alternating(24, 10));  // 24 is not an alternating number in base 10
+    // TODO: Add more test cases
+//    assert(is_alternating(1234543210, 10));
+  //  assert(is_alternating(101010101, 2));
+    //assert(is_alternating(2, 10));
     cout << "Alternating number tests passed!" << endl;
 }
+
+*/
